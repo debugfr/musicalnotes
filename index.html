@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MusicalNotes</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+  <script type="module" src="app.js"></script>
+</head>
+<body>
+  <header id="topbar">
+    <div class="logo" id="logo">🎵 MusicalNotes</div>
+    <nav id="nav"></nav>
+  </header>
+
+  <main>
+    <!-- LANDING -->
+    <section id="view-landing" class="view active">
+      <div class="hero">
+        <h1>Math that plays back.</h1>
+        <p>Earn notes. Build chords. Keep your rhythm. No pay-to-win, no hidden answers.</p>
+        <button class="btn primary big" id="btn-start">Get Started</button>
+      </div>
+      <div class="feature-grid">
+        <div class="feature"><h3>🎼 Measures &amp; Scales</h3><p>Clear progression — never stuck in repetition loops.</p></div>
+        <div class="feature"><h3>🔥 Rhythms</h3><p>Streaks with rest tokens. No anxiety spiral.</p></div>
+        <div class="feature"><h3>🎹 Chords</h3><p>Consecutive correct answers multiply your notes.</p></div>
+        <div class="feature"><h3>👩‍🏫 Teacher View</h3><p>Every answer, every hint, timestamped.</p></div>
+      </div>
+    </section>
+
+    <!-- AUTH -->
+    <section id="view-auth" class="view">
+      <div class="card auth-card">
+        <div class="tabs">
+          <button class="tab active" data-tab="signin">Sign In</button>
+          <button class="tab" data-tab="signup">Sign Up</button>
+        </div>
+        <form id="form-signin" class="auth-form active">
+          <input type="email" id="si-email" placeholder="Email" required />
+          <input type="password" id="si-pass" placeholder="Password" required />
+          <button class="btn primary" type="submit">Sign In</button>
+        </form>
+        <form id="form-signup" class="auth-form">
+          <input type="text" id="su-username" placeholder="Username" required />
+          <input type="email" id="su-email" placeholder="Email" required />
+          <input type="password" id="su-pass" placeholder="Password (6+)" minlength="6" required />
+          <button class="btn primary" type="submit">Create Account</button>
+        </form>
+        <div id="auth-msg" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- DASHBOARD -->
+    <section id="view-dashboard" class="view">
+      <h2 id="dash-hello">Hi!</h2>
+      <div class="stat-row" id="dash-stats"></div>
+      <div class="dash-actions">
+        <button class="btn primary big" id="btn-practice">Start Practicing</button>
+        <button class="btn" id="btn-teacher">Teacher Dashboard</button>
+      </div>
+      <div class="card">
+        <h3>Join a class</h3>
+        <div class="row">
+          <input type="text" id="join-code" placeholder="Class code (e.g. A1B2C3)" maxlength="6" />
+          <button class="btn" id="btn-join">Join</button>
+        </div>
+        <div id="join-msg" class="msg"></div>
+      </div>
+      <div class="card">
+        <h3>Create a class (becomes teacher)</h3>
+        <div class="row">
+          <input type="text" id="class-name" placeholder="Class name" />
+          <button class="btn" id="btn-create">Create</button>
+        </div>
+        <div id="create-msg" class="msg"></div>
+      </div>
+    </section>
+
+    <!-- PRACTICE -->
+    <section id="view-practice" class="view">
+      <div class="practice-bar">
+        <select id="topic-select"><option value="">All topics</option></select>
+        <div class="chips">
+          <span class="chip">🎹 Chord <b id="p-chord">0</b></span>
+          <span class="chip">💰 Notes <b id="p-notes">0</b></span>
+          <span class="chip">🔥 Rhythm <b id="p-rhythm">0</b></span>
+        </div>
+      </div>
+      <div class="card question-card">
+        <div class="q-topic" id="q-topic"></div>
+        <div class="q-prompt" id="q-prompt">Loading…</div>
+        <div class="q-hint" id="q-hint"></div>
+        <div class="q-answers" id="q-answers"></div>
+        <button class="btn" id="btn-hint">Show Hint</button>
+      </div>
+      <div class="feedback" id="feedback"></div>
+      <button class="btn primary big" id="btn-next" disabled>Next Question →</button>
+    </section>
+
+    <!-- TEACHER -->
+    <section id="view-teacher" class="view">
+      <h2>Teacher Dashboard</h2>
+      <div id="teacher-content"></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+</body>
+</html>
