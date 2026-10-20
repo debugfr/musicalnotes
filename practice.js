@@ -1,136 +1,200 @@
-import { getNextQuestion, submitAnswer, getTopics, getProfile, renderMath, toast, supabase } from './supabase.js';
+import { submitAnswer, getProfile, renderMath, toast, completeDiagnostic } from './supabase.js';
 
-let current = null;
-let hintShown = false;
+// --- MATH GENERATOR ---
+// Generates infinite questions from Grade 1 to 8 based on difficulty
+function generateMath(diff) {
+  let d = Math.max(1, Math.round(diff));
+  let prompt = "", answer = 0;
+
+  if (d === 1) {
+    let a = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1;
+    prompt = `${a} + ${b}`; answer = a + b;
+  } else if (d === 2) {
+    let a = Math.floor(Math.random() * 20) + 1, b = Math.floor(Math.random() * 20) + 1;
+    if (Math.random() > 0.5) { prompt = `${a} + ${b}`; answer = a + b; }
+    else { prompt = `${a + b} - ${b}`; answer = a; }
+  } else if (d === 3) {
+    let a = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1;
+    prompt = `${a} \\times ${b}`; answer = a * b;
+  } else if (d === 4) {
+    let a = Math.floor(Math.random() * 10) + 1, b = Math.floor(Math.random() * 10) + 1;
+    prompt = `${a * b} \\div ${a}`; answer = b;
+  } else if (d === 5) {
+    let x = Math.floor(Math.random() * 10) + 1;
+    let a = Math.floor(Math.random() * 5) + 2;
+    let b = Math.floor(Math.random() * 10) + 1;
+    prompt = `${a}x + ${b} = ${a * x + b}`; answer = x;
+  } else if (d === 6) {
+    let p = Math.floor(Math.random() * 8 + 2) * 10;
+    let n = Math.floor(Math.random() * 10 + 2) * 10;
+    prompt = `${p}\\% \\text{ of } ${n}`; answer = (p / 100) * n;
+  } else if (d === 7) {
+    let a = Math.floor(Math.random() * 20) - 10;
+    let b = Math.floor(Math.random() * 20) - 10;
+    prompt = `(${a}) + (${b})`; answer = a + b;
+  } else {
+    let a = Math.floor(Math.random() * 5) + 2;
+    let b = Math.floor(Math.random() * 3) + 2;
+    prompt = `${a}^{${b}}`; answer = Math.pow(a, b);
+  }
+  return { prompt: `$${prompt} = \\text{?}$`, answer, difficulty: d };
+}
+
+// --- DIAGNOSTIC LOGIC ---
+let diagQCount = 0;
+let diagDiff = 3.0;
+let diagCurrentQ = null;
+
+export function initDiagnosticView() {
+  document.getElementById('diag-intro').style.display = 'block';
+  document.getElementById('diag-active').style.display = 'none';
+  
+  document.getElementById('btn-start-diag').onclick = () => {
+    document.getElementById('diag-intro').style.display = 'none';
+    document.getElementById('diag-active').style.display = 'block';
+    diagQCount = 0; diagDiff = 3.0;
+    loadDiagQuestion();
+  };
+}
+
+function loadDiagQuestion() {
+  if (diagQCount >= 10) return finishDiagnostic();
+  
+  diagQCount++;
+  document.getElementById('diag-progress').textContent = diagQCount;
+  diagCurrentQ = generateMath(diagDiff);
+  
+  const pEl = document.getElementById('diag-prompt');
+  pEl.textContent = diagCurrentQ.prompt;
+  renderMath(pEl);
+
+  const ansEl = document.getElementById('diag-answers');
+  ansEl.innerHTML = '';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.placeholder = 'Your answer'; inp.step = 'any';
+  inp.id = 'diag-input';
+  inp.onkeydown = (e) => { if (e.key === 'Enter') submitDiag(); };
+  
+  const btn = document.createElement('button');
+  btn.className = 'btn primary'; btn.textContent = 'Submit'; btn.onclick = submitDiag;
+  
+  ansEl.appendChild(inp);
+  ansEl.appendChild(btn);
+  setTimeout(() => inp.focus(), 50);
+}
+
+function submitDiag() {
+  const val = parseFloat(document.getElementById('diag-input').value);
+  if (isNaN(val)) return;
+  
+  const isCorrect = Math.abs(val - diagCurrentQ.answer) < 0.01;
+  
+  // Adapt difficulty silently
+  if (isCorrect) diagDiff = Math.min(10, diagDiff + 1.0);
+  else diagDiff = Math.max(1, diagDiff - 0.5);
+  
+  loadDiagQuestion();
+}
+
+async function finishDiagnostic() {
+  document.getElementById('diag-active').style.display = 'none';
+  document.getElementById('diag-intro').style.display = 'block';
+  document.getElementById('diag-intro').innerHTML = `<h2>Assessment Complete!</h2><p class="text-muted mb-2">Calculating your placement...</p>`;
+  
+  const finalGrade = Math.max(1, Math.min(8, Math.round(diagDiff)));
+  await completeDiagnostic(finalGrade);
+  
+  const p = await getProfile();
+  window.state.profile = p;
+  toast(`Placed in Grade ${p.grade_level}!`);
+  setTimeout(() => { window.showView('dashboard'); }, 1500);
+}
+
+// --- STANDARD PRACTICE LOGIC ---
+let currentQ = null;
+let currentDiff = 3.0;
+let streak = 0;
 let startTime = 0;
-let selectedValue = null;
 
 export async function initPracticeView() {
-  const sel = document.getElementById('topic-select');
-  if (sel.options.length <= 1) {
-    const topics = await getTopics();
-    topics.forEach(t => {
-      const o = document.createElement('option');
-      o.value = t.slug; o.textContent = t.title;
-      sel.appendChild(o);
-    });
-    sel.onchange = () => loadQuestion(sel.value || null);
-  }
-  await refreshStats();
-  
-  document.getElementById('btn-hint').onclick = () => {
-    if (!current?.hint) return;
-    hintShown = true;
-    document.getElementById('q-hint').textContent = current.hint;
-  };
-  
-  document.getElementById('btn-next').onclick = () => loadQuestion(sel.value || null);
-  
-  await loadQuestion(sel.value || null);
-}
-
-async function refreshStats() {
   const p = await getProfile();
-  window.state.profile = p || window.state.profile;
-  document.getElementById('p-notes').textContent = p?.note_balance ?? 0;
-  document.getElementById('p-rhythm').textContent = p?.current_rhythm ?? 0;
+  window.state.profile = p;
+  document.getElementById('p-notes').textContent = p.note_balance;
+  document.getElementById('q-level').textContent = p.grade_level;
   
-  const { data: chord } = await supabase
-    .from('chord_state')
-    .select('current_chord')
-    .eq('user_id', p.id)
-    .single();
-    
-  document.getElementById('p-chord').textContent = chord?.current_chord ?? 0;
+  // Start at user's actual grade level
+  currentDiff = p.grade_level;
+  streak = 0;
+  loadPracticeQuestion();
+  
+  document.getElementById('btn-next').onclick = () => {
+    document.getElementById('feedback').className = 'feedback';
+    loadPracticeQuestion();
+  };
 }
 
-async function loadQuestion(topic) {
-  hintShown = false;
-  selectedValue = null;
-  document.getElementById('feedback').className = 'feedback';
-  document.getElementById('q-hint').textContent = '';
+function loadPracticeQuestion() {
   document.getElementById('btn-next').disabled = true;
-  document.getElementById('btn-hint').disabled = false;
-  document.getElementById('q-answers').innerHTML = '';
-  document.getElementById('q-prompt').textContent = 'Loading…';
-  document.getElementById('q-topic').textContent = '';
-
-  try {
-    current = await getNextQuestion(topic);
-  } catch (e) {
-    document.getElementById('q-prompt').textContent = 'No questions available.';
-    return;
-  }
-
-  document.getElementById('q-topic').textContent = current.topic || '';
-  const promptEl = document.getElementById('q-prompt');
-  promptEl.textContent = current.prompt;
-  renderMath(promptEl);
+  currentQ = generateMath(currentDiff);
   startTime = Date.now();
 
-  const answers = document.getElementById('q-answers');
-  if (current.answer_type === 'multiple_choice') {
-    (current.distractors || []).forEach(opt => {
-      const btn = document.createElement('button');
-      btn.textContent = opt;
-      btn.onclick = () => {
-        answers.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
-        selectedValue = opt;
-      };
-      answers.appendChild(btn);
-    });
-  } else {
-    const inp = document.createElement('input');
-    inp.type = 'text';
-    inp.placeholder = 'Your answer';
-    inp.id = 'num-input';
-    inp.oninput = () => {
-      const v = parseFloat(inp.value);
-      selectedValue = isNaN(v) ? null : v;
-    };
-    inp.onkeydown = (e) => { if (e.key === 'Enter') doSubmit(); };
-    answers.appendChild(inp);
-    setTimeout(() => inp.focus(), 50);
-  }
+  const pEl = document.getElementById('q-prompt');
+  pEl.textContent = currentQ.prompt;
+  renderMath(pEl);
 
-  const submit = document.createElement('button');
-  submit.className = 'btn primary';
-  submit.textContent = 'Submit Answer';
-  submit.id = 'btn-submit';
-  submit.onclick = doSubmit;
-  answers.appendChild(submit);
+  const ansEl = document.getElementById('q-answers');
+  ansEl.innerHTML = '';
+  const inp = document.createElement('input');
+  inp.type = 'number'; inp.placeholder = 'Answer'; inp.step = 'any';
+  inp.id = 'q-input';
+  inp.onkeydown = (e) => { if (e.key === 'Enter') submitPractice(); };
+  
+  const btn = document.createElement('button');
+  btn.className = 'btn primary'; btn.textContent = 'Submit'; btn.onclick = submitPractice;
+  
+  ansEl.appendChild(inp);
+  ansEl.appendChild(btn);
+  setTimeout(() => inp.focus(), 50);
 }
 
-async function doSubmit() {
-  if (selectedValue === null || selectedValue === undefined) {
-    toast('Enter an answer first');
-    return;
-  }
-  document.getElementById('btn-submit').disabled = true;
-  document.getElementById('btn-hint').disabled = true;
+async function submitPractice() {
+  const val = parseFloat(document.getElementById('q-input').value);
+  if (isNaN(val)) { toast('Enter a number'); return; }
+  
+  document.getElementById('btn-submit').disabled = true; // Prevent double clicks
+  const isCorrect = Math.abs(val - currentQ.answer) < 0.01;
   const timeMs = Date.now() - startTime;
 
+  // Adaptive Logic
+  if (isCorrect) {
+    streak++;
+    if (streak >= 3) { currentDiff = Math.min(8, currentDiff + 0.3); streak = 0; }
+  } else {
+    streak = 0;
+    currentDiff = Math.max(1, currentDiff - 0.4);
+  }
+
   try {
-    const r = await submitAnswer(current.id, selectedValue, hintShown, timeMs);
+    const r = await submitAnswer(isCorrect, currentQ.prompt, currentQ.difficulty, false, timeMs);
     const fb = document.getElementById('feedback');
     
-    // SVG Icons for feedback
-    const checkSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-    const crossSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
-
-    if (r.is_correct) {
+    if (isCorrect) {
       fb.className = 'feedback ok show';
-      fb.innerHTML = `${checkSvg} Correct! +${r.notes_awarded} notes · Chord: ${r.new_chord} · Multiplier ×${r.multiplier}`;
-      if (r.new_chord >= 3) toast(`Chord built: ${r.new_chord} in a row!`);
+      fb.textContent = `Correct! +${r.notes_awarded} notes. (Chord: ${r.new_chord})`;
+      if (r.new_chord >= 3) toast(`🔥 ${r.new_chord} in a row!`);
     } else {
       fb.className = 'feedback err show';
-      fb.innerHTML = `${crossSvg} Not quite. Correct answer: <strong>${JSON.stringify(r.correct_answer.value)}</strong>`;
+      fb.textContent = `Incorrect. The answer was ${currentQ.answer}`;
     }
+    
+    // Refresh top stats
+    const p = await getProfile();
+    document.getElementById('p-notes').textContent = p.note_balance;
+    document.getElementById('p-chord').textContent = r.new_chord;
+    
     document.getElementById('btn-next').disabled = false;
-    await refreshStats();
   } catch (e) {
     toast(e.message);
-    document.getElementById('btn-submit').disabled = false;
+    document.getElementById('btn-next').disabled = false;
   }
 }
