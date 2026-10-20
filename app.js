@@ -2,62 +2,64 @@ import { supabase, getProfile, createClass, joinClass, toast } from './supabase.
 import { initPracticeView } from './practice.js';
 import { initTeacherView } from './teacher.js';
 
-export const state = { user: null, profile: null };
+window.state = { user: null, profile: null };
 
-const views = ['landing', 'auth', 'dashboard', 'practice', 'teacher'];
-
-export function showView(name) {
-  views.forEach(v => document.getElementById('view-' + v)?.classList.toggle('active', v === name));
+window.showView = function(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === 'view-' + name));
   renderNav();
   if (name === 'dashboard') renderDashboard();
   if (name === 'practice') initPracticeView();
   if (name === 'teacher') initTeacherView();
-}
+};
 
 function renderNav() {
   const nav = document.getElementById('nav');
-  if (!state.user) { nav.innerHTML = ''; return; }
+  if (!window.state.user) { nav.innerHTML = ''; return; }
   nav.innerHTML = `
     <button id="nav-dash">Dashboard</button>
     <button id="nav-practice">Practice</button>
     <button id="nav-signout">Sign Out</button>
   `;
-  nav.querySelector('#nav-dash').onclick = () => showView('dashboard');
-  nav.querySelector('#nav-practice').onclick = () => showView('practice');
-  nav.querySelector('#nav-signout').onclick = async () => {
-    await supabase.auth.signOut();
-    state.user = null; state.profile = null;
-    showView('landing');
-  };
 }
 
 async function refreshUser() {
   const { data: { session } } = await supabase.auth.getSession();
-  state.user = session?.user || null;
-  state.profile = session ? await getProfile() : null;
+  window.state.user = session?.user || null;
+  window.state.profile = session ? await getProfile() : null;
 }
 
-async function renderDashboard() {
-  if (!state.profile) return;
-  document.getElementById('dash-hello').textContent = `Hi, ${state.profile.username || 'musician'}! 🎶`;
+function renderDashboard() {
+  if (!window.state.profile) return;
+  document.getElementById('dash-hello').textContent = `Hello, ${window.state.profile.username || 'Student'}`;
   const stats = [
-    { num: state.profile.note_balance, lbl: 'Notes' },
-    { num: state.profile.current_rhythm, lbl: 'Rhythm (days)' },
-    { num: state.profile.role, lbl: 'Role' },
+    { num: window.state.profile.note_balance, lbl: 'Notes' },
+    { num: window.state.profile.current_rhythm, lbl: 'Rhythm (days)' },
+    { num: window.state.profile.role, lbl: 'Role' },
   ];
   document.getElementById('dash-stats').innerHTML = stats.map(s =>
     `<div class="stat"><div class="num">${s.num}</div><div class="lbl">${s.lbl}</div></div>`
   ).join('');
-  document.getElementById('btn-teacher').style.display = state.profile.role === 'teacher' ? '' : 'none';
+  
+  document.getElementById('btn-teacher').style.display = window.state.profile.role === 'teacher' ? 'inline-flex' : 'none';
 }
 
-// ---------- Boot ----------
-document.getElementById('logo').onclick = () => showView(state.user ? 'dashboard' : 'landing');
-document.getElementById('btn-start').onclick = () => showView('auth');
-document.getElementById('btn-practice').onclick = () => showView('practice');
-document.getElementById('btn-teacher').onclick = () => showView('teacher');
+// Global Click Delegation to prevent missing event listeners
+document.body.addEventListener('click', async (e) => {
+  if (e.target.closest('#logo')) window.showView(window.state.user ? 'dashboard' : 'landing');
+  if (e.target.closest('#btn-start')) window.showView('auth');
+  if (e.target.closest('#btn-practice')) window.showView('practice');
+  if (e.target.closest('#btn-teacher')) window.showView('teacher');
+  if (e.target.closest('#nav-dash')) window.showView('dashboard');
+  if (e.target.closest('#nav-practice')) window.showView('practice');
+  if (e.target.closest('#nav-signout')) {
+    await supabase.auth.signOut();
+    window.state.user = null;
+    window.state.profile = null;
+    window.showView('landing');
+  }
+});
 
-// Auth tabs
+// Auth Tabs
 document.querySelectorAll('.tab').forEach(tab => {
   tab.onclick = () => {
     document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
@@ -77,7 +79,7 @@ document.getElementById('form-signin').onsubmit = async (e) => {
   });
   if (error) { msg.textContent = error.message; msg.className = 'msg err'; return; }
   await refreshUser();
-  showView('dashboard');
+  window.showView('dashboard');
 };
 
 // Sign up
@@ -92,7 +94,7 @@ document.getElementById('form-signup').onsubmit = async (e) => {
   });
   if (error) { msg.textContent = error.message; msg.className = 'msg err'; return; }
   await refreshUser();
-  if (state.user) showView('dashboard');
+  if (window.state.user) window.showView('dashboard');
   else { msg.textContent = 'Check your email to confirm, then sign in.'; msg.className = 'msg ok'; }
 };
 
@@ -113,17 +115,17 @@ document.getElementById('btn-create').onclick = async () => {
   if (!name) return;
   try {
     const r = await createClass(name);
-    msg.innerHTML = `Created! Join code: <span class="code">${r.join_code}</span>`;
+    msg.innerHTML = `Created! Code: <span class="code">${r.join_code}</span>`;
     msg.className = 'msg ok';
     await refreshUser();
     toast('You are now a teacher!');
   } catch (err) { msg.textContent = err.message; msg.className = 'msg err'; }
 };
 
-// Initial auth check
+// Initial Boot
 (async () => {
   await refreshUser();
-  showView(state.user ? 'dashboard' : 'landing');
+  window.showView(window.state.user ? 'dashboard' : 'landing');
 })();
 
 supabase.auth.onAuthStateChange(async () => {
