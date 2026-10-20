@@ -1,10 +1,8 @@
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
-
-// Your specific project credentials
 const SUPABASE_URL = 'https://ykxzlelroficdotgvgdo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlreHpsZWxyb2ZpY2RvdGd2Z2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0NDM1NzIsImV4cCI6MjEwODAxOTU3Mn0.dn0vBsoU0LpsgYcv4-2OTtIA8YB03VtBeLwIhIZ3Qko';
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Use the global variable loaded in index.html
+export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export async function getProfile() {
   const { data: { user } } = await supabase.auth.getUser();
