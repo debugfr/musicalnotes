@@ -1,7 +1,6 @@
 const SUPABASE_URL = 'https://ykxzlelroficdotgvgdo.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlreHpsZWxyb2ZpY2RvdGd2Z2RvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTI0NDM1NzIsImV4cCI6MjEwODAxOTU3Mn0.dn0vBsoU0LpsgYcv4-2OTtIA8YB03VtBeLwIhIZ3Qko';
 
-// Use the global variable loaded in index.html
 export const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export async function getProfile() {
@@ -11,16 +10,11 @@ export async function getProfile() {
   return data;
 }
 
-export async function getNextQuestion(topic = null) {
-  const { data, error } = await supabase.rpc('get_next_question', { p_topic: topic });
-  if (error) throw error;
-  return data;
-}
-
-export async function submitAnswer(questionId, answerValue, hintUsed, timeMs) {
+export async function submitAnswer(isCorrect, prompt, difficulty, hintUsed, timeMs) {
   const { data, error } = await supabase.rpc('submit_answer', {
-    p_question_id: questionId,
-    p_answer: { value: answerValue },
+    p_is_correct: isCorrect,
+    p_prompt: prompt,
+    p_difficulty: difficulty,
     p_hint_used: hintUsed,
     p_time_ms: timeMs,
   });
@@ -28,13 +22,13 @@ export async function submitAnswer(questionId, answerValue, hintUsed, timeMs) {
   return data;
 }
 
-export async function getTopics() {
-  const { data } = await supabase.from('topics').select('slug,title').order('title');
-  return data || [];
+export async function completeDiagnostic(grade) {
+  const { error } = await supabase.rpc('complete_diagnostic', { p_grade: grade });
+  if (error) throw error;
 }
 
-export async function createClass(name) {
-  const { data, error } = await supabase.rpc('create_class', { p_name: name });
+export async function createClass(name, passcode) {
+  const { data, error } = await supabase.rpc('create_class', { p_name: name, p_passcode: passcode });
   if (error) throw error;
   return data;
 }
@@ -67,13 +61,10 @@ export function renderMath(el) {
   if (window.renderMathInElement) {
     try {
       window.renderMathInElement(el, {
-        delimiters: [
-          { left: '$$', right: '$$', display: true },
-          { left: '$', right: '$', display: false },
-        ],
+        delimiters: [{ left: '$$', right: '$$', display: true }, { left: '$', right: '$', display: false }],
         throwOnError: false,
       });
-    } catch (e) { /* noop */ }
+    } catch (e) {}
   }
 }
 
