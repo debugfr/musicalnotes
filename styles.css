@@ -23,10 +23,9 @@ body {
   min-height: 100vh;
   line-height: 1.5;
   overflow-x: hidden;
-  /* Cursor Spotlight Effect */
   background-image: radial-gradient(
-    circle 800px at var(--mouse-x) var(--mouse-y),
-    rgba(37, 99, 235, 0.04),
+    circle 600px at var(--mouse-x) var(--mouse-y),
+    rgba(37, 99, 235, 0.06),
     transparent 80%
   );
 }
@@ -78,7 +77,7 @@ main { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem; position: relativ
 .hero { text-align: center; padding: 5rem 1rem; max-width: 600px; margin: 0 auto; }
 .hero p { font-size: 1.1rem; margin-bottom: 2rem; }
 
-/* 3D Cards (Features & Stats) */
+/* 3D Cards */
 .feature-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 3rem; perspective: 1000px; }
 .feature, .stat, .card.tilt-card {
   background: var(--surface); border: 1px solid var(--border);
@@ -87,22 +86,25 @@ main { max-width: 900px; margin: 0 auto; padding: 3rem 1.5rem; position: relativ
   transition: transform 0.1s ease, box-shadow 0.3s ease, border-color 0.3s ease;
   will-change: transform;
   position: relative;
+  overflow: hidden;
 }
-/* Internal glow that tracks cursor inside the card */
+/* Internal glow */
 .feature::before, .card.tilt-card::before {
   content: ''; position: absolute; inset: 0; border-radius: 12px;
-  background: radial-gradient(circle 200px at var(--card-mouse-x) var(--card-mouse-y), rgba(37, 99, 235, 0.08), transparent 80%);
+  background: radial-gradient(circle 250px at var(--card-mouse-x) var(--card-mouse-y), rgba(37, 99, 235, 0.1), transparent 80%);
   opacity: 0; transition: opacity 0.3s;
-  pointer-events: none;
+  pointer-events: none; z-index: 0;
 }
 .feature:hover::before, .card.tilt-card:hover::before { opacity: 1; }
 .feature:hover, .stat:hover, .card.tilt-card:hover {
-  border-color: #d4d4d4; box-shadow: 0 20px 40px -10px rgba(0,0,0,0.08), 0 10px 20px -5px rgba(0,0,0,0.04);
+  border-color: #d4d4d4; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.1);
 }
-/* The pop-out effect for content inside the card */
+
+/* The pop-out effect */
 .feature-content {
   transform: translateZ(30px);
   transition: transform 0.1s ease;
+  position: relative; z-index: 1;
 }
 .feature-icon { width: 24px; height: 24px; color: var(--text); margin-bottom: 1rem; }
 .feature p { font-size: 0.9rem; margin-top: 0.5rem; }
@@ -171,9 +173,7 @@ input:focus, select:focus {
 
 /* Dashboard Stats */
 .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; perspective: 1000px; }
-.stat {
-  text-align: center; border-radius: 12px;
-}
+.stat { text-align: center; border-radius: 12px; }
 .stat .num { font-size: 2rem; font-weight: 700; color: var(--text); line-height: 1; margin-bottom: 0.25rem; }
 .stat .lbl { color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; font-weight: 600; }
 .dash-actions { display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap; }
