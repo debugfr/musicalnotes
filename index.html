@@ -7,12 +7,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css" />
+  
+  <!-- Cache buster added to CSS -->
+  <link rel="stylesheet" href="styles.css?v=1" />
+  
+  <!-- Load Supabase UMD before the app -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
-  <script type="module" src="app.js"></script>
+  
+  <!-- Cache buster added to JS -->
+  <script type="module" src="app.js?v=1"></script>
 </head>
 <body>
   
@@ -129,7 +136,6 @@
         <section id="view-teacher" class="view">
           <div class="welcome-header">
             <h1>Teacher Dashboard</h1>
-            <p>Manage classes and monitor student progress.</p>
           </div>
           
           <div class="grid-2">
@@ -154,7 +160,6 @@
         <section id="view-admin" class="view">
           <div class="welcome-header">
             <h1>Admin God Mode</h1>
-            <p>Platform overview and live monitoring.</p>
           </div>
           
           <div class="stat-row">
