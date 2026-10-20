@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MusicalNotes</title>
+  <title>MusicalNotes — Math Practice</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,150 +15,203 @@
   <script type="module" src="app.js"></script>
 </head>
 <body>
-  <header id="topbar">
-    <div class="logo" id="logo">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-      MusicalNotes
+  
+  <!-- APP SHELL -->
+  <div class="app-layout" id="app-shell" style="display:none;">
+    
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        MusicalNotes <span class="version">v0.1</span>
+      </div>
+      <nav class="sidebar-nav" id="sidebar-nav">
+        <!-- Injected by JS based on role -->
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="user-profile">
+          <div class="avatar" id="sb-avatar">S</div>
+          <div class="user-info">
+            <span id="sb-username">Student</span>
+            <span class="role" id="sb-role">student</span>
+          </div>
+        </div>
+        <button class="btn text-btn" id="btn-signout">Sign Out</button>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <div class="main-wrapper">
+      <header class="topbar">
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-stats">
+          <div class="stat-pill">Grade <b id="tb-grade">-</b></div>
+          <div class="stat-pill">Notes <b id="tb-notes">0</b></div>
+          <div class="stat-pill">Rhythm <b id="tb-rhythm">0</b></div>
+        </div>
+      </header>
+
+      <main class="content-area">
+        
+        <!-- DASHBOARD VIEW -->
+        <section id="view-dashboard" class="view active">
+          <div class="welcome-header">
+            <h1>Welcome back, <span id="dash-name">Student</span>.</h1>
+            <p>Ready to build your rhythm?</p>
+          </div>
+          
+          <div class="grid-2">
+            <div class="card action-card" id="card-go-practice">
+              <h3>Practice</h3>
+              <p class="text-muted">Adaptive math questions based on your current grade level.</p>
+              <button class="btn primary mt-2" id="btn-practice">Start Practicing →</button>
+            </div>
+            
+            <div class="card">
+              <h3>Join a Class</h3>
+              <p class="text-muted">Connect with your teacher to track progress.</p>
+              <div class="row mt-2">
+                <input type="text" id="join-code" placeholder="Class code" maxlength="6" />
+                <button class="btn" id="btn-join">Join</button>
+              </div>
+              <div id="join-msg" class="msg"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ASSESSMENT VIEW -->
+        <section id="view-assessment" class="view">
+          <div class="card text-center max-w-md" id="assess-intro">
+            <h2>Initial Assessment</h2>
+            <p class="text-muted mt-2 mb-2">Welcome! Before you start, we need to figure out your exact grade level. This is a quick adaptive test. <strong>There are no hints.</strong></p>
+            <button class="btn primary big" id="btn-start-assess">Begin Assessment</button>
+          </div>
+          
+          <div id="assess-active" style="display:none;">
+            <div class="practice-header">
+              <div class="progress-bar"><div class="progress-fill" id="assess-progress-bar"></div></div>
+              <span class="text-muted" id="assess-progress-text">Question 1 of 15</span>
+            </div>
+            
+            <div class="card question-container">
+              <div class="q-header">
+                <span class="badge" id="q-type-badge">Numeric</span>
+                <span class="difficulty-label" id="q-diff-label">Level 3</span>
+              </div>
+              <div class="q-prompt" id="assess-prompt">Loading...</div>
+              <div class="q-input-area" id="assess-input-area"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PRACTICE VIEW -->
+        <section id="view-practice" class="view">
+          <div class="practice-header">
+            <h2>Practice Session</h2>
+            <div class="chips">
+              <span class="chip">Chord <b id="p-chord">0</b></span>
+            </div>
+          </div>
+          
+          <div class="card question-container">
+            <div class="q-header">
+              <span class="badge" id="prac-type-badge">Numeric</span>
+              <span class="difficulty-label" id="prac-diff-label">Level 3</span>
+            </div>
+            <div class="q-prompt" id="prac-prompt">Loading...</div>
+            
+            <div class="q-input-area" id="prac-input-area">
+              <!-- Dynamically injected inputs (MC, Text, Voice) -->
+            </div>
+            
+            <div class="feedback-box" id="prac-feedback" style="display:none;"></div>
+            
+            <div class="q-actions mt-2" id="prac-actions" style="display:none;">
+              <button class="btn primary big" id="btn-next-prac">Next Question →</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- TEACHER VIEW -->
+        <section id="view-teacher" class="view">
+          <div class="welcome-header">
+            <h1>Teacher Dashboard</h1>
+            <p>Manage classes and monitor student progress.</p>
+          </div>
+          
+          <div class="grid-2">
+            <div class="card">
+              <h3>Create a Class</h3>
+              <p class="text-muted mb-2">Requires teacher passcode.</p>
+              <div class="row">
+                <input type="text" id="class-name" placeholder="Class name" />
+              </div>
+              <div class="row mt-2">
+                <input type="password" id="teacher-passcode" placeholder="Passcode" />
+                <button class="btn" id="btn-create">Create</button>
+              </div>
+              <div id="create-msg" class="msg"></div>
+            </div>
+          </div>
+          
+          <div id="teacher-classes" class="mt-2">
+            <!-- Classes list injected by JS -->
+          </div>
+        </section>
+
+        <!-- ADMIN VIEW -->
+        <section id="view-admin" class="view">
+          <div class="welcome-header">
+            <h1>Admin God Mode</h1>
+            <p>Platform overview and live monitoring.</p>
+          </div>
+          
+          <div class="stat-row">
+            <div class="stat"><div class="num" id="admin-users">0</div><div class="lbl">Total Users</div></div>
+            <div class="stat"><div class="num" id="admin-attempts">0</div><div class="lbl">Total Attempts</div></div>
+            <div class="stat"><div class="num" id="admin-classes">0</div><div class="lbl">Active Classes</div></div>
+          </div>
+
+          <div class="card mt-2">
+            <h3>Live Global Feed (Last 50 Attempts)</h3>
+            <div class="table-wrap">
+              <table id="admin-feed">
+                <thead><tr><th>Time</th><th>User</th><th>Question</th><th>Result</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
     </div>
-    <nav id="nav"></nav>
-  </header>
+  </div>
 
-  <main>
-    <!-- LANDING -->
-    <section id="view-landing" class="view active">
-      <div class="hero">
-        <h1>Math practice, gamified.</h1>
-        <p>Earn notes, build chords, and keep your rhythm. No pay-to-win mechanics.</p>
-        <button class="btn primary big" id="btn-start">Get Started</button>
+  <!-- AUTH VIEW (Standalone) -->
+  <div id="view-auth" class="auth-wrapper active">
+    <div class="auth-box card">
+      <div class="auth-logo">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
       </div>
-      <div class="feature-grid">
-        <div class="feature"><h3>Adaptive Engine</h3><p>The difficulty scales with you in real-time.</p></div>
-        <div class="feature"><h3>Grade Placement</h3><p>A built-in diagnostic finds your exact starting point.</p></div>
-        <div class="feature"><h3>Chords</h3><p>Correct answers in a row multiply your notes.</p></div>
-        <div class="feature"><h3>Teacher View</h3><p>See every student answer, hint, and timestamp.</p></div>
+      <h2 class="text-center">MusicalNotes</h2>
+      <div class="tabs mt-2">
+        <button class="tab active" data-tab="signin">Sign In</button>
+        <button class="tab" data-tab="signup">Sign Up</button>
       </div>
-    </section>
-
-    <!-- AUTH -->
-    <section id="view-auth" class="view">
-      <div class="card auth-card">
-        <div class="tabs">
-          <button class="tab active" data-tab="signin">Sign In</button>
-          <button class="tab" data-tab="signup">Sign Up</button>
-        </div>
-        <form id="form-signin" class="auth-form active">
-          <input type="email" id="si-email" placeholder="Email" required />
-          <input type="password" id="si-pass" placeholder="Password" required />
-          <button class="btn primary" type="submit">Sign In</button>
-        </form>
-        <form id="form-signup" class="auth-form">
-          <input type="text" id="su-username" placeholder="Username" required />
-          <input type="email" id="su-email" placeholder="Email" required />
-          <input type="password" id="su-pass" placeholder="Password (6+ chars)" minlength="6" required />
-          <button class="btn primary" type="submit">Create Account</button>
-        </form>
-        <div id="auth-msg" class="msg"></div>
-      </div>
-    </section>
-
-    <!-- DIAGNOSTIC (I-READY STYLE) -->
-    <section id="view-diagnostic" class="view">
-      <div class="card text-center" id="diag-intro">
-        <h2>Welcome to MusicalNotes</h2>
-        <p class="text-muted mb-2">Let's find your starting grade level. This is a quick 10-question adaptive assessment. The difficulty will change based on your answers.</p>
-        <button class="btn primary big" id="btn-start-diag">Start Assessment</button>
-      </div>
-      
-      <div id="diag-active" style="display:none;">
-        <div class="practice-bar">
-          <h3>Diagnostic Assessment</h3>
-          <span class="chip">Question <b id="diag-progress">1</b> / 10</span>
-        </div>
-        <div class="card question-card">
-          <div class="q-prompt" id="diag-prompt">Loading...</div>
-          <div class="q-answers" id="diag-answers"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- DASHBOARD -->
-    <section id="view-dashboard" class="view">
-      <div class="dash-header">
-        <div>
-          <h2 id="dash-hello">Dashboard</h2>
-          <p class="text-muted">Keep up the rhythm.</p>
-        </div>
-        <div class="grade-badge">
-          <span class="lbl">Current Grade</span>
-          <span class="num" id="dash-grade">1</span>
-        </div>
-      </div>
-
-      <div class="stat-row">
-        <div class="stat">
-          <div class="num" id="dash-notes">0</div><div class="lbl">Notes</div>
-        </div>
-        <div class="stat">
-          <div class="num" id="dash-rhythm">0</div><div class="lbl">Day Rhythm</div>
-        </div>
-        <div class="stat">
-          <div class="num" id="dash-role">student</div><div class="lbl">Role</div>
-        </div>
-      </div>
-      
-      <div class="dash-actions">
-        <button class="btn primary big" id="btn-practice" style="width: 100%;">Continue Learning</button>
-        <button class="btn" id="btn-teacher" style="display:none; width: 100%;">Teacher Dashboard</button>
-      </div>
-      
-      <div class="grid-2">
-        <div class="card">
-          <h3>Join a class</h3>
-          <div class="row mt-2">
-            <input type="text" id="join-code" placeholder="Class code" maxlength="6" />
-            <button class="btn" id="btn-join">Join</button>
-          </div>
-          <div id="join-msg" class="msg"></div>
-        </div>
-        <div class="card">
-          <h3>Create a class</h3>
-          <p class="text-muted" style="font-size: 0.8rem; margin-bottom: 0.5rem;">Requires teacher passcode.</p>
-          <div class="row">
-            <input type="text" id="class-name" placeholder="Class name" />
-          </div>
-          <div class="row mt-2">
-            <input type="password" id="teacher-passcode" placeholder="Passcode" />
-            <button class="btn" id="btn-create">Create</button>
-          </div>
-          <div id="create-msg" class="msg"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- PRACTICE -->
-    <section id="view-practice" class="view">
-      <div class="practice-bar">
-        <h3>Practice</h3>
-        <div class="chips">
-          <span class="chip">Chord <b id="p-chord">0</b></span>
-          <span class="chip">Notes <b id="p-notes">0</b></span>
-        </div>
-      </div>
-      <div class="card question-card">
-        <div class="q-topic" id="q-topic">Grade Level <span id="q-level">3</span></div>
-        <div class="q-prompt" id="q-prompt">Loading…</div>
-        <div class="q-answers" id="q-answers"></div>
-      </div>
-      <div class="feedback" id="feedback"></div>
-      <button class="btn primary big mt-2" id="btn-next" disabled>Next Question</button>
-    </section>
-
-    <!-- TEACHER -->
-    <section id="view-teacher" class="view">
-      <h2>Teacher Dashboard</h2>
-      <div id="teacher-content"></div>
-    </section>
-  </main>
+      <form id="form-signin" class="auth-form active">
+        <input type="email" id="si-email" placeholder="Email" required />
+        <input type="password" id="si-pass" placeholder="Password" required />
+        <button class="btn primary" type="submit">Sign In</button>
+      </form>
+      <form id="form-signup" class="auth-form">
+        <input type="text" id="su-username" placeholder="Username" required />
+        <input type="email" id="su-email" placeholder="Email" required />
+        <input type="password" id="su-pass" placeholder="Password (6+ chars)" minlength="6" required />
+        <button class="btn primary" type="submit">Create Account</button>
+      </form>
+      <div id="auth-msg" class="msg text-center"></div>
+    </div>
+  </div>
 
   <div id="toast" class="toast"></div>
 </body>
