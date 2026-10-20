@@ -6,10 +6,7 @@ export async function initTeacherView() {
   const classes = await getMyClasses();
 
   if (!classes.length) {
-    container.innerHTML = `
-      <div class="card">
-        <p>You haven't created a class yet. Go to the dashboard and use "Create a class".</p>
-      </div>`;
+    container.innerHTML = `<div class="card"><p>You haven't created a class yet.</p></div>`;
     return;
   }
 
@@ -20,32 +17,33 @@ export async function initTeacherView() {
       getClassAttempts(c.id),
     ]);
 
-    html += `<div class="class-card">
-      <h3>${c.name} <span class="code">${c.join_code}</span></h3>
-      <p class="text-muted mb-2">${students.length} student(s) enrolled</p>
+    html += `<div class="card" style="margin-bottom: 2rem;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+        <h3>${c.name}</h3>
+        <span class="code">${c.join_code}</span>
+      </div>
+      <p class="text-muted mb-2">${students.length} student(s)</p>
       
-      <h4 style="margin-top:1rem; font-size: 0.95rem;">Students</h4>
       ${students.length ? `
         <table>
-          <tr><th>Username</th><th>Notes</th><th>Rhythm</th><th>Last Practice</th></tr>
+          <tr><th>Username</th><th>Grade</th><th>Notes</th><th>Rhythm</th></tr>
           ${students.map(s => `<tr>
             <td>${s.username || '—'}</td>
+            <td>Grade ${s.grade_level || 1}</td>
             <td>${s.note_balance}</td>
-            <td>${s.current_rhythm}</td>
-            <td>${s.last_practice_date || '—'}</td>
+            <td>${s.current_rhythm} days</td>
           </tr>`).join('')}
-        </table>` : '<p class="text-muted mt-2">No students yet.</p>'}
+        </table>` : ''}
       
-      <h4 style="margin-top:2rem; font-size: 0.95rem;">Recent Answers</h4>
+      <h4 style="margin-top:2rem; font-size: 1rem;">Recent Answers</h4>
       ${attempts.length ? `
         <table>
-          <tr><th>When</th><th>Student</th><th>Question</th><th>Their Answer</th><th>Result</th></tr>
-          ${attempts.slice(0, 25).map(a => `<tr>
-            <td style="white-space:nowrap;">${new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
+          <tr><th>When</th><th>Student</th><th>Question</th><th>Result</th></tr>
+          ${attempts.slice(0, 20).map(a => `<tr>
+            <td style="white-space:nowrap; color:var(--muted);">${new Date(a.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</td>
             <td>${a.username || '—'}</td>
             <td>${escapeHtml(a.prompt)}</td>
-            <td>${escapeHtml(JSON.stringify(a.submitted_answer?.value ?? a.submitted_answer))}</td>
-            <td>${a.is_correct ? '<span style="color:var(--success);font-weight:600;">Correct</span>' : '<span style="color:var(--error);">Correct: ' + escapeHtml(JSON.stringify(a.correct_answer?.value)) + '</span>'}</td>
+            <td>${a.is_correct ? '<span style="color:var(--success);font-weight:600;">Correct</span>' : '<span style="color:var(--error);">Incorrect</span>'}</td>
           </tr>`).join('')}
         </table>` : '<p class="text-muted mt-2">No attempts logged yet.</p>'}
     </div>`;
