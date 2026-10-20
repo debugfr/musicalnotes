@@ -75,7 +75,7 @@ input:focus { outline: none; border-color: var(--accent); }
 .msg.err { color: var(--error); }
 
 .auth-wrapper { display: none; position: fixed; inset: 0; background: var(--bg); z-index: 1000; align-items: center; justify-content: center; }
-.auth-wrapper.active { display: flex; }
+.auth-wrapper.active { display: flex !important; }
 .auth-box { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2.5rem; }
 .auth-logo { display: flex; justify-content: center; margin-bottom: 1rem; }
 .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; background: var(--bg); padding: 0.3rem; border-radius: 8px; }
