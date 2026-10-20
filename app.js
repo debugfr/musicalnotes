@@ -1,3 +1,5 @@
+console.log("MusicalNotes app.js loaded successfully");
+
 import { 
   supabase, getProfile, submitAnswer, completeDiagnostic, 
   createClass, joinClass, getMyClasses, getClassStudents, 
@@ -310,18 +312,18 @@ function renderDashboard() {
   document.getElementById('sb-avatar').textContent = p.username.charAt(0).toUpperCase();
 }
 
-// Event Listeners
-document.getElementById('btn-signout').onclick = async () => { await supabase.auth.signOut(); window.location.reload(); };
-document.getElementById('btn-practice').onclick = () => showView('practice');
-document.getElementById('card-go-practice').onclick = () => showView('practice');
+// Event Listeners (with safety checks so app never crashes)
+document.getElementById('btn-signout')?.addEventListener('click', async () => { await supabase.auth.signOut(); window.location.reload(); });
+document.getElementById('btn-practice')?.addEventListener('click', () => showView('practice'));
+document.getElementById('card-go-practice')?.addEventListener('click', () => showView('practice'));
 
-document.getElementById('btn-join').onclick = async () => {
+document.getElementById('btn-join')?.addEventListener('click', async () => {
   const code = document.getElementById('join-code').value.trim();
   const msg = document.getElementById('join-msg');
   try { const r = await joinClass(code); msg.textContent = `Joined ${r.name}!`; msg.className = 'msg ok'; } catch (err) { msg.textContent = err.message; msg.className = 'msg err'; }
-};
+});
 
-document.getElementById('btn-create').onclick = async () => {
+document.getElementById('btn-create')?.addEventListener('click', async () => {
   const name = document.getElementById('class-name').value.trim();
   const passcode = document.getElementById('teacher-passcode').value.trim();
   const msg = document.getElementById('create-msg');
@@ -331,23 +333,23 @@ document.getElementById('btn-create').onclick = async () => {
     msg.innerHTML = `Created! Code: ${r.join_code}`; msg.className = 'msg ok';
     await refreshUser(); renderSidebar(); initTeacherView();
   } catch (err) { msg.textContent = err.message; msg.className = 'msg err'; }
-};
+});
 
-document.querySelectorAll('.tab').forEach(tab => tab.onclick = () => {
+document.querySelectorAll('.tab').forEach(tab => tab.addEventListener('click', () => {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
   document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
   document.getElementById('form-' + tab.dataset.tab).classList.add('active');
-});
+}));
 
-document.getElementById('form-signin').onsubmit = async (e) => {
+document.getElementById('form-signin')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = document.getElementById('auth-msg'); msg.textContent = 'Signing in…';
   const { error } = await supabase.auth.signInWithPassword({ email: document.getElementById('si-email').value, password: document.getElementById('si-pass').value });
   if (error) { msg.textContent = error.message; msg.className = 'msg text-center err'; return; }
   await refreshUser(); bootApp();
-};
+});
 
-document.getElementById('form-signup').onsubmit = async (e) => {
+document.getElementById('form-signup')?.addEventListener('submit', async (e) => {
   e.preventDefault();
   const msg = document.getElementById('auth-msg'); msg.textContent = 'Creating account…';
   const { error } = await supabase.auth.signUp({
@@ -357,7 +359,7 @@ document.getElementById('form-signup').onsubmit = async (e) => {
   if (error) { msg.textContent = error.message; msg.className = 'msg text-center err'; return; }
   await refreshUser();
   if (window.state.user) bootApp(); else { msg.textContent = 'Check email to confirm, then sign in.'; msg.className = 'msg text-center ok'; }
-};
+});
 
 async function refreshUser() {
   try {
