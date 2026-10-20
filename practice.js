@@ -1,5 +1,4 @@
-import { getNextQuestion, submitAnswer, getTopics, getProfile, renderMath, toast } from './supabase.js';
-import { state, showView } from './app.js';
+import { getNextQuestion, submitAnswer, getTopics, getProfile, renderMath, toast, supabase } from './supabase.js';
 
 let current = null;
 let hintShown = false;
@@ -18,23 +17,30 @@ export async function initPracticeView() {
     sel.onchange = () => loadQuestion(sel.value || null);
   }
   await refreshStats();
+  
   document.getElementById('btn-hint').onclick = () => {
     if (!current?.hint) return;
     hintShown = true;
-    document.getElementById('q-hint').textContent = '💡 ' + current.hint;
+    document.getElementById('q-hint').textContent = current.hint;
   };
+  
   document.getElementById('btn-next').onclick = () => loadQuestion(sel.value || null);
+  
   await loadQuestion(sel.value || null);
 }
 
 async function refreshStats() {
   const p = await getProfile();
-  state.profile = p || state.profile;
+  window.state.profile = p || window.state.profile;
   document.getElementById('p-notes').textContent = p?.note_balance ?? 0;
   document.getElementById('p-rhythm').textContent = p?.current_rhythm ?? 0;
-  const { data: chord } = await import('./supabase.js').then(m =>
-    m.supabase.from('chord_state').select('current_chord').eq('user_id', p.id).single()
-  );
+  
+  const { data: chord } = await supabase
+    .from('chord_state')
+    .select('current_chord')
+    .eq('user_id', p.id)
+    .single();
+    
   document.getElementById('p-chord').textContent = chord?.current_chord ?? 0;
 }
 
@@ -52,7 +58,7 @@ async function loadQuestion(topic) {
   try {
     current = await getNextQuestion(topic);
   } catch (e) {
-    document.getElementById('q-prompt').textContent = 'No questions available. Run the SQL seed script.';
+    document.getElementById('q-prompt').textContent = 'No questions available.';
     return;
   }
 
@@ -108,13 +114,18 @@ async function doSubmit() {
   try {
     const r = await submitAnswer(current.id, selectedValue, hintShown, timeMs);
     const fb = document.getElementById('feedback');
+    
+    // SVG Icons for feedback
+    const checkSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
+    const crossSvg = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>`;
+
     if (r.is_correct) {
       fb.className = 'feedback ok show';
-      fb.textContent = `✅ Correct! +${r.notes_awarded} notes · Chord: ${r.new_chord} · Multiplier ×${r.multiplier}`;
-      if (r.new_chord >= 3) toast(`🎹 ${r.new_chord}-note chord!`);
+      fb.innerHTML = `${checkSvg} Correct! +${r.notes_awarded} notes · Chord: ${r.new_chord} · Multiplier ×${r.multiplier}`;
+      if (r.new_chord >= 3) toast(`Chord built: ${r.new_chord} in a row!`);
     } else {
       fb.className = 'feedback err show';
-      fb.textContent = `❌ Not quite. Correct answer: ${JSON.stringify(r.correct_answer.value)}`;
+      fb.innerHTML = `${crossSvg} Not quite. Correct answer: <strong>${JSON.stringify(r.correct_answer.value)}</strong>`;
     }
     document.getElementById('btn-next').disabled = false;
     await refreshStats();
