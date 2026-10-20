@@ -49,7 +49,6 @@ export async function getClassAttempts(classId) {
   if (error) throw error; return data || [];
 }
 
-// --- ADMIN FUNCTIONS ---
 export async function getAdminStats() {
   const { data, error } = await supabase.rpc('get_admin_stats');
   if (error) throw error; return data;
