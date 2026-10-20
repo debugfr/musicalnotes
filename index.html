@@ -3,7 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>MusicalNotes</title>
+  <title>MusicalNotes — Math Practice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" />
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
@@ -12,7 +15,12 @@
 </head>
 <body>
   <header id="topbar">
-    <div class="logo" id="logo">🎵 MusicalNotes</div>
+    <div class="logo" id="logo">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>
+      </svg>
+      MusicalNotes
+    </div>
     <nav id="nav"></nav>
   </header>
 
@@ -20,15 +28,31 @@
     <!-- LANDING -->
     <section id="view-landing" class="view active">
       <div class="hero">
-        <h1>Math that plays back.</h1>
-        <p>Earn notes. Build chords. Keep your rhythm. No pay-to-win, no hidden answers.</p>
+        <h1>Math practice, gamified.</h1>
+        <p>Earn notes, build chords, and keep your rhythm. No pay-to-win mechanics.</p>
         <button class="btn primary big" id="btn-start">Get Started</button>
       </div>
       <div class="feature-grid">
-        <div class="feature"><h3>🎼 Measures &amp; Scales</h3><p>Clear progression — never stuck in repetition loops.</p></div>
-        <div class="feature"><h3>🔥 Rhythms</h3><p>Streaks with rest tokens. No anxiety spiral.</p></div>
-        <div class="feature"><h3>🎹 Chords</h3><p>Consecutive correct answers multiply your notes.</p></div>
-        <div class="feature"><h3>👩‍🏫 Teacher View</h3><p>Every answer, every hint, timestamped.</p></div>
+        <div class="feature">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 12h16M4 18h16"/><circle cx="8" cy="12" r="2" fill="currentColor"/></svg>
+          <h3>Measures &amp; Scales</h3>
+          <p>Clear curriculum progression without repetition loops.</p>
+        </div>
+        <div class="feature">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+          <h3>Rhythms</h3>
+          <p>Daily streaks that don't punish you for taking a break.</p>
+        </div>
+        <div class="feature">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <h3>Chords</h3>
+          <p>Correct answers in a row multiply your notes.</p>
+        </div>
+        <div class="feature">
+          <svg class="feature-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+          <h3>Teacher View</h3>
+          <p>See every student answer, hint, and timestamp.</p>
+        </div>
       </div>
     </section>
 
@@ -47,7 +71,7 @@
         <form id="form-signup" class="auth-form">
           <input type="text" id="su-username" placeholder="Username" required />
           <input type="email" id="su-email" placeholder="Email" required />
-          <input type="password" id="su-pass" placeholder="Password (6+)" minlength="6" required />
+          <input type="password" id="su-pass" placeholder="Password (6+ chars)" minlength="6" required />
           <button class="btn primary" type="submit">Create Account</button>
         </form>
         <div id="auth-msg" class="msg"></div>
@@ -56,27 +80,32 @@
 
     <!-- DASHBOARD -->
     <section id="view-dashboard" class="view">
-      <h2 id="dash-hello">Hi!</h2>
+      <h2 id="dash-hello">Dashboard</h2>
       <div class="stat-row" id="dash-stats"></div>
       <div class="dash-actions">
         <button class="btn primary big" id="btn-practice">Start Practicing</button>
         <button class="btn" id="btn-teacher">Teacher Dashboard</button>
       </div>
-      <div class="card">
-        <h3>Join a class</h3>
-        <div class="row">
-          <input type="text" id="join-code" placeholder="Class code (e.g. A1B2C3)" maxlength="6" />
-          <button class="btn" id="btn-join">Join</button>
+      
+      <div class="grid-2">
+        <div class="card">
+          <h3>Join a class</h3>
+          <p class="text-muted mb-2">Enter the 6-character code from your teacher.</p>
+          <div class="row">
+            <input type="text" id="join-code" placeholder="e.g. A1B2C3" maxlength="6" />
+            <button class="btn" id="btn-join">Join</button>
+          </div>
+          <div id="join-msg" class="msg"></div>
         </div>
-        <div id="join-msg" class="msg"></div>
-      </div>
-      <div class="card">
-        <h3>Create a class (becomes teacher)</h3>
-        <div class="row">
-          <input type="text" id="class-name" placeholder="Class name" />
-          <button class="btn" id="btn-create">Create</button>
+        <div class="card">
+          <h3>Create a class</h3>
+          <p class="text-muted mb-2">You will be promoted to a teacher role.</p>
+          <div class="row">
+            <input type="text" id="class-name" placeholder="Class name" />
+            <button class="btn" id="btn-create">Create</button>
+          </div>
+          <div id="create-msg" class="msg"></div>
         </div>
-        <div id="create-msg" class="msg"></div>
       </div>
     </section>
 
@@ -85,9 +114,9 @@
       <div class="practice-bar">
         <select id="topic-select"><option value="">All topics</option></select>
         <div class="chips">
-          <span class="chip">🎹 Chord <b id="p-chord">0</b></span>
-          <span class="chip">💰 Notes <b id="p-notes">0</b></span>
-          <span class="chip">🔥 Rhythm <b id="p-rhythm">0</b></span>
+          <span class="chip">Chord <b id="p-chord">0</b></span>
+          <span class="chip">Notes <b id="p-notes">0</b></span>
+          <span class="chip">Rhythm <b id="p-rhythm">0</b></span>
         </div>
       </div>
       <div class="card question-card">
@@ -95,10 +124,10 @@
         <div class="q-prompt" id="q-prompt">Loading…</div>
         <div class="q-hint" id="q-hint"></div>
         <div class="q-answers" id="q-answers"></div>
-        <button class="btn" id="btn-hint">Show Hint</button>
+        <button class="btn mt-2" id="btn-hint">Show Hint</button>
       </div>
       <div class="feedback" id="feedback"></div>
-      <button class="btn primary big" id="btn-next" disabled>Next Question →</button>
+      <button class="btn primary big mt-2" id="btn-next" disabled>Next Question</button>
     </section>
 
     <!-- TEACHER -->
